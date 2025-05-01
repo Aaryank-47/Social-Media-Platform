@@ -1051,6 +1051,12 @@
                 margin-bottom: 12px;
             }
         }
+
+        .btn-link[aria-expanded][id^="postOptions"] {
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
     </style>
 </head>
 
@@ -1072,11 +1078,11 @@
                                     <i class="fa-solid fa-house"></i> <span>Home</span>
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <a class="nav-link" href="/explore">
                                     <i class="fa-solid fa-compass"></i> <span>Explore</span>
                                 </a>
-                            </li>
+                            </li> -->
                             <li class="nav-item">
                                 <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#exampleModal3">
                                     <i class="fa-solid fa-magnifying-glass"></i> <span>Search</span>
@@ -1189,14 +1195,12 @@
 
                                 <!-- Three-dot menu button (borderless) -->
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-link text-dark p-0 border-hide" type="button"
-                                        id="postMenu{{post.id}}" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v"></i>
+                                    <button class="btn btn-link text-secondary" type="button" id="postOptions{{post.id}}" data-bs-toggle="dropdown" aria-expanded="false" style="padding: 0; border: none; background: transparent;">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="postMenu{{post.id}}">
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="postOptions{{post.id}}">
                                         {% if user.username == post.user.user.username %}
-                                        <li><a class="dropdown-item text-danger" href="/delete/{{post.id}}"><i
-                                                    class="fas fa-trash me-2"></i>Delete</a></li>
+                                        <li><a class="dropdown-item text-danger" href="/delete/{{post.id}}"><i class="fas fa-trash me-2"></i>Delete</a></li>
                                         {% else %}
                                         <li><a class="dropdown-item" href="#"><i class="fas fa-flag me-2"></i>Report</a>
                                         </li>

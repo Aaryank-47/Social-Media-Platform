@@ -87,38 +87,12 @@ def logoutt(request):
 
 @login_required(login_url='/loginn')
 def home(request):
-    current_user = request.user # Use request.user directly
-    
-    # Get IDs of users the current user is connected to
-    connections_sender = ConnectionRequest.objects.filter(sender=current_user, is_accepted=True).values_list('receiver_id', flat=True)
-    connections_receiver = ConnectionRequest.objects.filter(receiver=current_user, is_accepted=True).values_list('sender_id', flat=True)
-    connection_user_ids = set(connections_sender) | set(connections_receiver) # Combine IDs efficiently
-    
-    # Define the filtering logic using Q objects
-    visible_posts_query = (
-        # Posts by the current user
-        Q(user=current_user.username) |
-        
-        # Posts by connections where allowed_viewers is empty (visible to all connections)
-        (Q(user__in=User.objects.filter(id__in=connection_user_ids).values_list('username', flat=True)) & Q(allowed_viewers__isnull=True)) |
-        
-        # Posts where the current user is explicitly in allowed_viewers
-        Q(allowed_viewers=current_user)
-    )
-
-    # Apply the filter and order
-    posts = Post.objects.filter(visible_posts_query).distinct().order_by('-created_at')
-
-    # Get the user's profile
+    current_user = request.user
+    posts = Post.objects.all().order_by('-created_at')  # Show all posts
     profile = Profile.objects.get(user=current_user)
-
-    # Get liked posts for the current user (using UUIDs)
     liked_post_ids = LikePost.objects.filter(username=current_user.username).values_list('post_id', flat=True)
-    # Convert post IDs in the main query to strings for comparison, assuming post.id is UUID
-    liked_posts = [str(uuid_str) for uuid_str in liked_post_ids] 
-
-    # Fetch current user's connections (User objects) for the upload modal
-    connections = User.objects.filter(id__in=connection_user_ids)
+    liked_posts = [str(uuid_str) for uuid_str in liked_post_ids]
+    connections = User.objects.none()  # Or fetch as needed
 
     context = {
         'posts': posts,
@@ -126,7 +100,6 @@ def home(request):
         'liked_posts': liked_posts,
         'connections': connections,
     }
-
     return render(request, 'main.html', context)
 
 
@@ -195,22 +168,22 @@ def likes(request, id):
     post.save()
     return redirect(request.META.get('HTTP_REFERER', '/'))
 
-@login_required(login_url='/loginn')
-def explore(request):
-    # Only show posts that are public (allowed_viewers is null)
-    posts = Post.objects.filter(allowed_viewers__isnull=True).order_by('-created_at') # Changed from Post.objects.all()
-    profile = Profile.objects.get(user=request.user)
+# @login_required(login_url='/loginn')
+# def explore(request):
+#     # Only show posts that are public (allowed_viewers is null)
+#     posts = Post.objects.filter(allowed_viewers__isnull=True).order_by('-created_at') # Changed from Post.objects.all()
+#     profile = Profile.objects.get(user=request.user)
 
-    # Get liked posts for the current user (Ensure comparison works with UUIDs if post.id is UUID)
-    liked_post_ids = LikePost.objects.filter(username=request.user.username).values_list('post_id', flat=True)
-    liked_posts = [str(uuid_str) for uuid_str in liked_post_ids]
+#     # Get liked posts for the current user (Ensure comparison works with UUIDs if post.id is UUID)
+#     liked_post_ids = LikePost.objects.filter(username=request.user.username).values_list('post_id', flat=True)
+#     liked_posts = [str(uuid_str) for uuid_str in liked_post_ids]
 
-    context={
-        'post': posts, # Changed variable name from 'post' to 'posts' for consistency
-        'profile':profile,
-        'liked_posts': liked_posts,
-    }
-    return render(request, 'explore.html',context)
+#     context={
+#         'post': posts, # Changed variable name from 'post' to 'posts' for consistency
+#         'profile':profile,
+#         'liked_posts': liked_posts,
+#     }
+#     return render(request, 'explore.html',context)
     
 @login_required(login_url='/loginn')
 def profile(request, id_user):
@@ -422,14 +395,14 @@ def search_results(request):
     }
     return render(request, 'search_user.html', context)
 
-def home_post(request,id):
-    post=Post.objects.get(id=id)
+def home_post(request, id):
+    post = Post.objects.get(id=id)
     profile = Profile.objects.get(user=request.user)
-    context={
-        'post':post,
-        'profile':profile
+    context = {
+        'post': post,
+        'profile': profile
     }
-    return render(request, 'main.html',context)
+    return render(request, 'main.html', context)
 
 
 
